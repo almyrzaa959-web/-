@@ -1,0 +1,68 @@
+services:
+
+  # قاعدة البيانات
+  database:
+    image: postgres:16
+    container_name: tito_database
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: tito
+      POSTGRES_USER: tito_admin
+      POSTGRES_PASSWORD: tito_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # التخزين المحلي للفيديوهات أثناء التطوير
+  storage:
+    image: minio/minio
+    container_name: tito_storage
+    restart: unless-stopped
+
+    command: server /data --console-address ":9001"
+
+    environment:
+      MINIO_ROOT_USER: tito_storage
+      MINIO_ROOT_PASSWORD: tito_storage_password
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    volumes:
+      - minio_data:/data
+
+  # الخادم الخلفي
+  backend:
+    build:
+      context: ./backend
+
+    container_name: tito_backend
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql://tito_admin:tito_password@database:5432/tito
+
+      STORAGE_ENDPOINT: storage:9000
+      STORAGE_ACCESS_KEY: tito_storage
+      STORAGE_SECRET_KEY: tito_storage_password
+      STORAGE_BUCKET: tito-videos
+
+      JWT_SECRET: change_this_secret_key
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      - database
+      - storage
+
+volumes:
+
+  postgres_data:
+
+  minio_data:
