@@ -1,6 +1,5 @@
 services:
 
-  # قاعدة البيانات
   database:
     image: postgres:16
     container_name: tito_database
@@ -16,8 +15,9 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
-  # التخزين المحلي للفيديوهات أثناء التطوير
+
   storage:
     image: minio/minio
     container_name: tito_storage
@@ -36,7 +36,7 @@ services:
     volumes:
       - minio_data:/data
 
-  # الخادم الخلفي
+
   backend:
     build:
       context: ./backend
@@ -60,6 +60,7 @@ services:
     depends_on:
       - database
       - storage
+
 
 volumes:
 
