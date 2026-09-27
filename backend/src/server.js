@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ==========================================
-// إعدادات الخادم
+// إعدادات الحماية
 // ==========================================
 
 app.use(helmet());
@@ -36,17 +36,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-pool.query("SELECT NOW()")
-  .then(() => {
-    console.log("تم الاتصال بقاعدة البيانات بنجاح");
-  })
-  .catch((error) => {
-    console.error(
-      "خطأ في الاتصال بقاعدة البيانات:",
-      error.message
-    );
-  });
-
 // ==========================================
 // نظام الحسابات
 // ==========================================
@@ -54,6 +43,14 @@ pool.query("SELECT NOW()")
 const authRoutes = require("./auth");
 
 app.use("/api/auth", authRoutes);
+
+// ==========================================
+// نظام الفيديوهات
+// ==========================================
+
+const videoRoutes = require("./videos");
+
+app.use("/api/videos", videoRoutes);
 
 // ==========================================
 // الصفحة الرئيسية
@@ -72,22 +69,19 @@ app.get("/", (req, res) => {
 });
 
 // ==========================================
-// فحص حالة الخادم
+// فحص الخادم وقاعدة البيانات
 // ==========================================
 
 app.get("/api/health", async (req, res) => {
 
   try {
 
-    const result = await pool.query(
-      "SELECT NOW()"
-    );
+    await pool.query("SELECT NOW()");
 
     res.json({
       success: true,
       server: "online",
-      database: "online",
-      time: result.rows[0].now
+      database: "online"
     });
 
   } catch (error) {
@@ -106,26 +100,11 @@ app.get("/api/health", async (req, res) => {
 // تشغيل الخادم
 // ==========================================
 
-app.listen(
-  PORT,
-  "0.0.0.0",
-  () => {
+app.listen(PORT, "0.0.0.0", () => {
 
-    console.log(
-      "=================================="
-    );
+  console.log("=================================");
+  console.log("TITO Backend يعمل الآن");
+  console.log(`Port: ${PORT}`);
+  console.log("=================================");
 
-    console.log(
-      "TITO Backend يعمل الآن"
-    );
-
-    console.log(
-      `المنفذ: ${PORT}`
-    );
-
-    console.log(
-      "=================================="
-    );
-
-  }
-);
+});
