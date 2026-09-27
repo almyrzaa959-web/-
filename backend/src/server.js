@@ -1,25 +1,21 @@
 // ==========================================
-// TITO - الخادم الخلفي
+// TITO - الخادم الرئيسي
 // ==========================================
 
-// استيراد المكتبات
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const dotenv = require("dotenv");
 const { Pool } = require("pg");
 
-// تحميل إعدادات البيئة
 dotenv.config();
 
-// إنشاء تطبيق الخادم
 const app = express();
 
-// رقم المنفذ
 const PORT = process.env.PORT || 5000;
 
 // ==========================================
-// إعدادات الحماية والاتصال
+// إعدادات الخادم
 // ==========================================
 
 app.use(helmet());
@@ -28,36 +24,51 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+  extended: true
+}));
 
 // ==========================================
-// الاتصال بقاعدة البيانات
+// قاعدة البيانات
 // ==========================================
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-// اختبار الاتصال بقاعدة البيانات
 pool.query("SELECT NOW()")
   .then(() => {
     console.log("تم الاتصال بقاعدة البيانات بنجاح");
   })
   .catch((error) => {
-    console.error("خطأ في الاتصال بقاعدة البيانات:", error.message);
+    console.error(
+      "خطأ في الاتصال بقاعدة البيانات:",
+      error.message
+    );
   });
 
 // ==========================================
-// الصفحة الرئيسية للخادم
+// نظام الحسابات
+// ==========================================
+
+const authRoutes = require("./auth");
+
+app.use("/api/auth", authRoutes);
+
+// ==========================================
+// الصفحة الرئيسية
 // ==========================================
 
 app.get("/", (req, res) => {
+
   res.json({
     success: true,
-    message: "مرحباً بك في خادم TITO",
+    app: "TITO",
+    message: "مرحباً بك في منصة تيتو",
     status: "الخادم يعمل",
     version: "1.0.0"
   });
+
 });
 
 // ==========================================
@@ -68,7 +79,9 @@ app.get("/api/health", async (req, res) => {
 
   try {
 
-    const result = await pool.query("SELECT NOW()");
+    const result = await pool.query(
+      "SELECT NOW()"
+    );
 
     res.json({
       success: true,
@@ -82,8 +95,7 @@ app.get("/api/health", async (req, res) => {
     res.status(500).json({
       success: false,
       server: "online",
-      database: "offline",
-      error: error.message
+      database: "offline"
     });
 
   }
@@ -94,11 +106,26 @@ app.get("/api/health", async (req, res) => {
 // تشغيل الخادم
 // ==========================================
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
 
-  console.log("----------------------------------");
-  console.log("TITO Backend يعمل الآن");
-  console.log(`المنفذ: ${PORT}`);
-  console.log("----------------------------------");
+    console.log(
+      "=================================="
+    );
 
-});
+    console.log(
+      "TITO Backend يعمل الآن"
+    );
+
+    console.log(
+      `المنفذ: ${PORT}`
+    );
+
+    console.log(
+      "=================================="
+    );
+
+  }
+);
