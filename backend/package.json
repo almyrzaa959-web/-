@@ -1,7 +1,7 @@
 {
   "name": "tito-backend",
   "version": "1.0.0",
-  "description": "TITO - Short Video Social Platform Backend",
+  "description": "TITO - Short Video Social Network",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
