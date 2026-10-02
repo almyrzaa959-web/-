@@ -1,40 +1,45 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const users = [];
+const { pool } = require("./database");
 
 async function register(username, email, password) {
-  const exists = users.find(
-    user => user.email === email || user.username === username
+  const existing = await pool.query(
+    "SELECT id FROM users WHERE email = $1 OR username = $2",
+    [email, username]
   );
 
-  if (exists) {
+  if (existing.rows.length > 0) {
     throw new Error("الحساب موجود مسبقاً");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, 12);
 
-  const user = {
-    id: Date.now().toString(),
-    username,
-    email,
-    password: hashedPassword,
-    createdAt: new Date().toISOString()
-  };
+  const result = await pool.query(
+    `INSERT INTO users (username, email, password_hash)
+     VALUES ($1, $2, $3)
+     RETURNING id, username, email, created_at`,
+    [username, email, passwordHash]
+  );
 
-  users.push(user);
-
-  return createToken(user);
+  return createToken(result.rows[0]);
 }
 
 async function login(email, password) {
-  const user = users.find(user => user.email === email);
+  const result = await pool.query(
+    "SELECT * FROM users WHERE email = $1",
+    [email]
+  );
 
-  if (!user) {
+  if (result.rows.length === 0) {
     throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
   }
 
-  const valid = await bcrypt.compare(password, user.password);
+  const user = result.rows[0];
+
+  const valid = await bcrypt.compare(
+    password,
+    user.password_hash
+  );
 
   if (!valid) {
     throw new Error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
