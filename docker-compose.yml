@@ -11,6 +11,7 @@ services:
 
     ports:
       - "5432:5432"
+      - "4000:4000"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -38,9 +39,6 @@ services:
       DATABASE_URL: postgresql://tito:tito_password@127.0.0.1:5432/tito
       PORT: 4000
       NODE_ENV: production
-
-    ports:
-      - "4000:4000"
 
 volumes:
   postgres_data:
