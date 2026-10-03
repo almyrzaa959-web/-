@@ -24,7 +24,6 @@ services:
   backend:
     build:
       context: ./backend
-
     container_name: tito-backend
     restart: unless-stopped
 
@@ -33,7 +32,7 @@ services:
         condition: service_healthy
 
     environment:
-      DATABASE_URL: postgresql://tito:tito_password@postgres:5432/tito
+      DATABASE_URL: postgresql://tito:tito_password@tito-postgres:5432/tito
       PORT: 4000
       NODE_ENV: production
 
