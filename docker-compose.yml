@@ -11,7 +11,6 @@ services:
 
     ports:
       - "5432:5432"
-      - "4000:4000"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -29,16 +28,17 @@ services:
     container_name: tito-backend
     restart: unless-stopped
 
-    network_mode: "service:postgres"
-
     depends_on:
       postgres:
         condition: service_healthy
 
     environment:
-      DATABASE_URL: postgresql://tito:tito_password@127.0.0.1:5432/tito
+      DATABASE_URL: postgresql://tito:tito_password@postgres:5432/tito
       PORT: 4000
       NODE_ENV: production
+
+    ports:
+      - "4000:4000"
 
 volumes:
   postgres_data:
