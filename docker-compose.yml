@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:16
     container_name: tito-postgres
