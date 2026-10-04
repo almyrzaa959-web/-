@@ -1,34 +1,29 @@
 services:
-  db:
+  postgres:
     image: postgres:16
+    container_name: tito-postgres
     restart: unless-stopped
+    network_mode: host
+
     environment:
       POSTGRES_USER: tito
       POSTGRES_PASSWORD: tito_password
       POSTGRES_DB: tito
-    ports:
-      - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tito -d tito"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   backend:
     build:
       context: ./backend
+    container_name: tito-backend
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
+    network_mode: host
+
     environment:
-      DATABASE_URL: postgresql://tito:tito_password@db:5432/tito
+      DATABASE_URL: postgresql://tito:tito_password@127.0.0.1:5432/tito
       PORT: 4000
       NODE_ENV: production
-    ports:
-      - "4000:4000"
 
 volumes:
   postgres_data:
